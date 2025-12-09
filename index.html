@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Verificación de Certificado</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #0A1A2F;
+    color: white;
+    padding: 40px;
+    text-align: center;
+  }
+  .card {
+    background: #112240;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    margin: auto;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Verificación de Alumno</h2>
+  <p id="resultado">Cargando...</p>
+</div>
+
+<script>
+// obtener el ID de la URL
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+// HOJA PÚBLICA
+const sheetURL = "https://docs.google.com/spreadsheets/d/1DpsAdEUOBkFmXfEjIf7cWLPvlXcMgIOhfCxP-J37e2Y/gviz/tq?tqx=out:json";
+
+// buscar ese ID en la hoja
+fetch(sheetURL)
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    let existe = false;
+
+    json.table.rows.forEach(row => {
+      if (row.c[0] && row.c[0].v === id) {
+        existe = true;
+        document.getElementById("resultado").innerHTML =
+          "<strong>ID válido</strong><br><br>" +
+          "Alumno: " + row.c[1].v + "<br>" +
+          "Curso: " + row.c[2].v + "<br>" +
+          "Fecha: " + row.c[3].v;
+      }
+    });
+
+    if (!existe) {
+      document.getElementById("resultado").innerHTML = "❌ ID no encontrado";
+    }
+  });
+</script>
+
+</body>
+</html>
+
