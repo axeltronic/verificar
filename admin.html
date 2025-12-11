@@ -1,174 +1,73 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Panel de Administración - Axeltronic Certificados</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../style.css">
-
-<style>
-    body {
-        background: #0a0a0a;
-        color: #fff;
-        font-family: "Inter", sans-serif;
-        padding: 20px;
-    }
-    .login-box, .panel {
-        max-width: 420px;
-        margin: 50px auto;
-        padding: 25px;
-        background: #111;
-        border-radius: 12px;
-        border: 1px solid #222;
-    }
-    input, select {
-        width: 95%;
-        padding: 10px;
-        margin-top: 8px;
-        margin-bottom: 18px;
-        border-radius: 8px;
-        border: none;
-        background: #1d1d1d;
-        color: #fff;
-    }
-    button {
-        width: 100%;
-        padding: 12px;
-        background: #0af;
-        border: none;
-        border-radius: 8px;
-        color: #000;
-        cursor: pointer;
-        font-weight: bold;
-    }
-    button:hover { background: #09c; }
-
-    #qrCanvas { margin-top: 20px; display: block; }
-
-    .list-box {
-        margin-top: 40px;
-        padding: 20px;
-        border: 1px solid #222;
-        background: #151515;
-        border-radius: 10px;
-    }
-    .item {
-        padding: 10px;
-        border-bottom: 1px solid #333;
-    }
-</style>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Administrador — Axeltronic</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script defer src="admin.js"></script>
 </head>
+
 <body>
 
-<!-- LOGIN -->
-<div id="login" class="login-box">
-    <h2>Ingresar al Panel</h2>
-    <input id="user" type="text" placeholder="Usuario">
-    <input id="pass" type="password" placeholder="Contraseña">
-    <button onclick="login()">Entrar</button>
-    <p id="loginError" style="color:red; margin-top:10px; display:none;">
-        Usuario o contraseña incorrectos.
-    </p>
-</div>
-
-<!-- PANEL -->
-<div id="panel" class="panel" style="display:none;">
-    <h2>Cargar Alumno</h2>
-
-    <input id="alumnoNombre" type="text" placeholder="Nombre completo">
-    <input id="alumnoDNI" type="text" placeholder="DNI">
-
-    <select id="alumnoCurso">
-        <option disabled selected>Seleccioná el curso</option>
-        <option>Reparación de celulares</option>
-        <option>Reparación de celulares intermedio</option>
-        <option>Remanufactura de pantallas</option>
-        <option>Software básico - intermedio</option>
-    </select>
-
-    <select id="modalidad">
-        <option disabled selected>Modalidad</option>
-        <option>Online</option>
-        <option>Presencial</option>
-    </select>
-
-    <input id="sede" type="text" placeholder="Sede">
-    <input id="fecha" type="month" placeholder="Año-Mes finalización">
-
-    <button onclick="guardarAlumno()">Generar y Guardar</button>
-
-    <canvas id="qrCanvas"></canvas>
-    <button id="btnDescargarQR" style="display:none;" onclick="descargarQR()">Descargar QR</button>
-
-    <div class="list-box">
-        <h3>Alumnos generados</h3>
-        <div id="listado"></div>
+  <!-- LOGIN -->
+  <div id="auth" class="container">
+    <h1>Acceso</h1>
+    <div class="card">
+      <label>Contraseña</label>
+      <input id="pass" type="password">
+      <button id="btnLogin">Ingresar</button>
+      <p id="authError" style="color:#ff5555; display:none;">Contraseña incorrecta</p>
     </div>
-</div>
+  </div>
 
-<script>
-/* -----------------------------------------
-   LOGIN
------------------------------------------ */
+  <!-- PANEL -->
+  <div id="panel" style="display:none;">
+    <div class="container">
 
-function login() {
-    const u = document.getElementById("user").value.trim();
-    const p = document.getElementById("pass").value.trim();
+      <h1>Generador de Certificados</h1>
 
-    if (u === "admin" && p === "keycert") {
-        document.getElementById("login").style.display = "none";
-        document.getElementById("panel").style.display = "block";
-    } else {
-        document.getElementById("loginError").style.display = "block";
-    }
-}
+      <div class="card">
 
-/* -----------------------------------------
-   MOCK DATABASE (localStorage)
-   Luego lo pasamos a GitHub API si querés
------------------------------------------ */
+        <label>Nombre completo</label>
+        <input id="nombre" type="text">
 
-function loadDB() {
-    return JSON.parse(localStorage.getItem("certificados") || "[]");
-}
-function saveDB(data) {
-    localStorage.setItem("certificados", JSON.stringify(data));
-}
+        <label>DNI</label>
+        <input id="dni" type="text">
 
-/* -----------------------------------------
-   GENERAR CÓDIGO RANDOM
------------------------------------------ */
+        <label>Curso</label>
+        <select id="curso">
+          <option value="Reparación de celulares">Reparación de celulares</option>
+          <option value="Reparación de celulares intermedio">Reparación de celulares intermedio</option>
+          <option value="Remanufactura de pantallas">Remanufactura de pantallas</option>
+          <option value="Software básico-intermedio">Software básico-intermedio</option>
+        </select>
 
-function generarCodigo() {
-    return "AX" + Math.random().toString(36).substring(2, 10).toUpperCase();
-}
+        <label>Modalidad</label>
+        <select id="modalidad">
+          <option value="Presencial">Presencial</option>
+          <option value="Online">Online</option>
+        </select>
 
-/* -----------------------------------------
-   GUARDAR ALUMNO + GENERAR QR
------------------------------------------ */
+        <label>Sede</label>
+        <input id="sede" type="text">
 
-function guardarAlumno() {
-    const nombre = document.getElementById("alumnoNombre").value;
-    const dni = document.getElementById("alumnoDNI").value;
-    const curso = document.getElementById("alumnoCurso").value;
-    const mod = document.getElementById("modalidad").value;
-    const sede = document.getElementById("sede").value;
-    const fecha = document.getElementById("fecha").value;
+        <label>Finalización</label>
+        <input id="fecha" type="month">
 
-    if (!nombre || !dni || !curso || !mod || !sede || !fecha) {
-        alert("Completá todos los campos");
-        return;
-    }
+        <button id="btnGenerar">Generar certificado + QR</button>
 
-    const code = generarCodigo();
+        <div id="qrContainer" style="display:none; margin-top:20px;">
+          <h3>Código generado</h3>
+          <p id="generatedCode"></p>
+          <canvas id="qr"></canvas>
+          <button id="btnDescargarQR">Descargar QR</button>
+        </div>
 
-    const alumno = { code, nombre, dni, curso, modalidad: mod, sede, fecha };
+      </div>
+    </div>
+  </div>
 
-    const db = loadDB();
-    db.push(alumno);
-    saveDB(db);
-
-    genera
+</body>
+</html>
