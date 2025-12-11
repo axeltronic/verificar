@@ -1,23 +1,30 @@
 body {
     font-family: Arial, sans-serif;
-    background: #f2f2f2;
-    padding: 20px;
+    background: #0f0f0f;
+    color: white;
+    margin: 0;
+    padding: 0;
 }
 
 .container {
-    max-width: 420px;
-    margin: auto;
-    background: #fff;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 0 10px #0002;
+    max-width: 450px;
+    margin: 40px auto;
+}
+
+.card {
+    background: #1a1a1a;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
 }
 
 input, select {
     width: 95%;
     padding: 10px;
-    margin-bottom: 12px;
-    border: 1px solid #aaa;
+    margin: 6px 0 15px;
+    background: #111;
+    color: white;
+    border: 1px solid #333;
     border-radius: 8px;
 }
 
@@ -25,32 +32,21 @@ button {
     width: 100%;
     padding: 12px;
     border: none;
-    background: #0077ff;
+    border-radius: 8px;
+    background: #4b8bff;
     color: white;
-    font-weight: bold;
-    border-radius: 10px;
+    font-size: 16px;
     cursor: pointer;
 }
 
 button:hover {
-    background: #005cd3;
+    background: #3a73d9;
 }
 
-.ok {
-    padding: 10px;
-    background: #e1ffe1;
-    border-left: 4px solid #00a200;
-    margin-top: 15px;
+.card.success {
+    border-left: 5px solid #4bff6a;
 }
 
-.err {
-    padding: 10px;
-    background: #ffe1e1;
-    border-left: 4px solid #d30000;
-    margin-top: 15px;
-}
-
-.qr {
-    margin-top: 15px;
-    width: 180px;
+.card.error {
+    border-left: 5px solid #ff4b4b;
 }
