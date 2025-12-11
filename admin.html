@@ -1,73 +1,78 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Administrador — Axeltronic</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-  <script defer src="admin.js"></script>
-</head>
+// ==================
+//  AUTENTICACIÓN
+// ==================
+const PASSWORD = "keycert";
 
-<body>
+document.getElementById("btnLogin").addEventListener("click", () => {
+    const pass = document.getElementById("pass").value;
 
-  <!-- LOGIN -->
-  <div id="auth" class="container">
-    <h1>Acceso</h1>
-    <div class="card">
-      <label>Contraseña</label>
-      <input id="pass" type="password">
-      <button id="btnLogin">Ingresar</button>
-      <p id="authError" style="color:#ff5555; display:none;">Contraseña incorrecta</p>
-    </div>
-  </div>
+    if (pass === PASSWORD) {
+        document.getElementById("auth").style.display = "none";
+        document.getElementById("panel").style.display = "block";
+    } else {
+        document.getElementById("authError").style.display = "block";
+    }
+});
 
-  <!-- PANEL -->
-  <div id="panel" style="display:none;">
-    <div class="container">
 
-      <h1>Generador de Certificados</h1>
+// ==================
+//  GENERADOR DE CÓDIGO
+// ==================
+function generarCodigo() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "";
+    for (let i = 0; i < 10; i++) {
+        code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return code;
+}
 
-      <div class="card">
 
-        <label>Nombre completo</label>
-        <input id="nombre" type="text">
+// ==================
+//  GENERAR QR + CERT
+// ==================
+let qrImage = null;
 
-        <label>DNI</label>
-        <input id="dni" type="text">
+document.getElementById("btnGenerar").addEventListener("click", () => {
 
-        <label>Curso</label>
-        <select id="curso">
-          <option value="Reparación de celulares">Reparación de celulares</option>
-          <option value="Reparación de celulares intermedio">Reparación de celulares intermedio</option>
-          <option value="Remanufactura de pantallas">Remanufactura de pantallas</option>
-          <option value="Software básico-intermedio">Software básico-intermedio</option>
-        </select>
+    const alumno = {
+        id: generarCodigo(),
+        nombreCompleto: document.getElementById("nombre").value,
+        dni: document.getElementById("dni").value,
+        curso: document.getElementById("curso").value,
+        modalidad: document.getElementById("modalidad").value,
+        sede: document.getElementById("sede").value,
+        finalizacion: document.getElementById("fecha").value,
+    };
 
-        <label>Modalidad</label>
-        <select id="modalidad">
-          <option value="Presencial">Presencial</option>
-          <option value="Online">Online</option>
-        </select>
+    // Mostrar código en pantalla
+    document.getElementById("generatedCode").innerText = alumno.id;
 
-        <label>Sede</label>
-        <input id="sede" type="text">
+    // Generar QR con texto overlay
+    const url = `https://axeltronic.com.ar/verificar?code=${alumno.id}`;
 
-        <label>Finalización</label>
-        <input id="fecha" type="month">
+    const qr = new QRious({
+        element: document.getElementById("qr"),
+        value: url,
+        size: 260,
+        level: "H",
+    });
 
-        <button id="btnGenerar">Generar certificado + QR</button>
+    // Mostrar contenedor
+    document.getElementById("qrContainer").style.display = "block";
 
-        <div id="qrContainer" style="display:none; margin-top:20px;">
-          <h3>Código generado</h3>
-          <p id="generatedCode"></p>
-          <canvas id="qr"></canvas>
-          <button id="btnDescargarQR">Descargar QR</button>
-        </div>
+    // Guardar QR como imagen para descargar
+    qrImage = document.getElementById("qr").toDataURL("image/png");
 
-      </div>
-    </div>
-  </div>
+});
 
-</body>
-</html>
+
+// ==================
+//  DESCARGAR QR
+// ==================
+document.getElementById("btnDescargarQR").addEventListener("click", () => {
+    const link = document.createElement("a");
+    link.download = "qr-certificado.png";
+    link.href = qrImage;
+    link.click();
+});
