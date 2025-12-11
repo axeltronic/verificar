@@ -2,7 +2,6 @@
 // CONFIGURACIÓN
 // =============================
 
-// HASH SHA-256 de la contraseña "keycert"
 const ADMIN_HASH = "4d1ee6ff3fbc0e5efbe2e53ab9779e155a278feacf840e563b5d87d28b07c795";
 
 // =============================
