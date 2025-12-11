@@ -5,28 +5,40 @@ const REPO_OWNER = "axeltronic";
 const REPO_NAME = "verificar";
 const FILE_PATH = "codes.json";
 
-// Guarda el token en memoria del navegador
+// Guarda o carga token almacenado
 let GITHUB_TOKEN = localStorage.getItem("gh_token") || null;
 
 async function pedirToken() {
     if (!GITHUB_TOKEN) {
         GITHUB_TOKEN = prompt("Ingresá tu GitHub Token (solo la primera vez):");
-        if (!GITHUB_TOKEN) {
-            alert("Token necesario para guardar en GitHub.");
-            throw new Error("Sin token");
+
+        if (!GITHUB_TOKEN || GITHUB_TOKEN.trim() === "") {
+            alert("Token necesario para guardar alumnos.");
+            throw new Error("Falta token");
         }
+
         localStorage.setItem("gh_token", GITHUB_TOKEN);
     }
 }
 
 // =======================================
-// Generar código único (8 caracteres)
+// Generar código único de 8 caracteres
 // =======================================
 function generarCodigo() {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let code = "";
     for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
     return code;
+}
+
+// =======================================
+// Cargar codes.json actual
+// =======================================
+async function cargarCodes() {
+    const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${FILE_PATH}`;
+    const r = await fetch(url + "?" + Date.now());
+    if (!r.ok) return [];
+    return await r.json();
 }
 
 // =======================================
@@ -37,18 +49,20 @@ async function guardarEnGitHub(nuevaLista) {
 
     const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
 
-    // 1. Obtener SHA actual (si existe)
+    // Obtener SHA actual
     let sha = null;
-    const r = await fetch(url);
+    const r = await fetch(url, { headers: { "Authorization": `token ${GITHUB_TOKEN}` } });
+
     if (r.ok) {
         const json = await r.json();
         sha = json.sha;
     }
 
-    // 2. Preparar contenido
-    const contenidoBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(nuevaLista, null, 2))));
+    // Preparar contenido JSON en base64
+    const contenido = JSON.stringify(nuevaLista, null, 2);
+    const base64Content = btoa(unescape(encodeURIComponent(contenido)));
 
-    // 3. Enviar commit
+    // Commit
     const resp = await fetch(url, {
         method: "PUT",
         headers: {
@@ -57,14 +71,14 @@ async function guardarEnGitHub(nuevaLista) {
         },
         body: JSON.stringify({
             message: "Nuevo alumno agregado",
-            content: contenidoBase64,
+            content: base64Content,
             sha: sha
         })
     });
 
     if (!resp.ok) {
-        alert("Error guardando en GitHub");
         console.error(await resp.text());
+        alert("Error guardando en GitHub.");
         return false;
     }
 
@@ -72,17 +86,7 @@ async function guardarEnGitHub(nuevaLista) {
 }
 
 // =======================================
-// Cargar lista actual de codes.json
-// =======================================
-async function cargarCodes() {
-    const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${FILE_PATH}`;
-    const r = await fetch(url + "?" + Date.now());
-    if (!r.ok) return [];
-    return await r.json();
-}
-
-// =======================================
-// Formulario ADMIN
+// FORMULARIO ADMIN
 // =======================================
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("formAlumno");
@@ -110,26 +114,38 @@ document.addEventListener("DOMContentLoaded", () => {
             codigo
         };
 
-        // URL final del alumno (verify)
+        // Cargar lista actual
+        const lista = await cargarCodes();
+
+        // ================================
+        // PREVENIR REGISTROS DUPLICADOS
+        // ================================
+        const yaExiste = lista.some(a => a.dni === dni);
+
+        if (yaExiste) {
+            alert("⚠ Ya existe un alumno registrado con ese DNI. No se puede repetir.");
+            return;
+        }
+
+        // Agregar alumno nuevo
+        lista.push(alumno);
+
+        // Guardar en GitHub
+        const ok = await guardarEnGitHub(lista);
+
+        if (!ok) return;
+
+        // URL final con código
         const urlCert = `https://axeltronic.github.io/verificar/?code=${codigo}`;
 
-        // QR
+        // Generar QR
         new QRious({
             element: qrImg,
             size: 200,
             value: urlCert
         });
 
-        // Cargar lista actual
-        const lista = await cargarCodes();
-        lista.push(alumno);
-
-        // Guardar en GitHub
-        const ok = await guardarEnGitHub(lista);
-
-        if (ok) {
-            alert("Alumno guardado y QR generado");
-            console.log("Guardado:", alumno);
-        }
+        alert("Alumno guardado correctamente. QR generado.");
+        console.log("Guardado:", alumno);
     });
 });
