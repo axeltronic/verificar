@@ -1,48 +1,26 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administración - Axeltronic</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-    <h2>Cargar Alumno</h2>
+<h2>Panel de Administración</h2>
 
-    <label>Nombre completo</label>
-    <input type="text" id="nombre" required>
+<form id="loginForm">
+  <label>Contraseña</label>
+  <input type="password" id="adminPass">
+  <button type="submit">Entrar</button>
+</form>
 
-    <label>DNI</label>
-    <input type="text" id="dni" required>
-
-    <label>Curso</label>
-<select id="curso">
-  <option value="Reparación de celulares">Reparación de celulares</option>
-  <option value="Reparación de celulares intermedio">Reparación de celulares intermedio</option>
-  <option value="Remanufactura de pantallas">Remanufactura de pantallas</option>
-  <option value="Software básico-intermedio">Software básico-intermedio</option>
-</select>
-
-<label>Modalidad</label>
-<select id="modalidad">
-  <option value="Presencial">Presencial</option>
-  <option value="Online">Online</option>
-</select>
-
-    <label>Sede</label>
-    <input id="sede" type="text">
-
-    <label>Finalización</label>
-    <input type="month" id="finalizacion" required>
-
-    <button onclick="guardarAlumno()">Guardar alumno</button>
-
-    <div id="status"></div>
+<div id="panel" style="display:none;">
+  <h3>Alumnos generados</h3>
+  <pre id="list"></pre>
 </div>
 
 <script src="admin.js"></script>
-
 </body>
 </html>
