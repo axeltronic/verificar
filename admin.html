@@ -5,66 +5,88 @@
   <title>Panel de Certificados — Axeltronic</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- TU CSS -->
   <link rel="stylesheet" href="style.css">
 
   <!-- Librería QR -->
   <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+  <script defer src="admin.js"></script>
 </head>
 
 <body>
 
-  <!-- ===== LOGIN ===== -->
-  <div id="auth" style="max-width:400px;margin:auto;margin-top:40px;">
-    <h2>Ingresar</h2>
-    <input id="pass" type="password" placeholder="Contraseña">
-    <button id="btnLogin">Entrar</button>
-    <div id="authError" style="display:none;color:red;margin-top:10px;">
-      Contraseña incorrecta
+  <!-- =============== LOGIN =============== -->
+  <div id="auth" class="container" style="max-width:400px; margin-top:40px;">
+    <h1>Acceso</h1>
+
+    <div class="card">
+      <label>Contraseña</label>
+      <input id="pass" type="password">
+
+      <button id="btnLogin">Ingresar</button>
+
+      <p id="authError" style="color:#ff5555; display:none; margin-top:10px;">
+        Contraseña incorrecta
+      </p>
     </div>
   </div>
 
-  <!-- ===== PANEL (oculto hasta loguear) ===== -->
-  <div id="panel" style="display:none;max-width:600px;margin:auto;margin-top:30px;">
-    <h2>Generar Certificado</h2>
+  <!-- =============== PANEL =============== -->
+  <div id="panel" style="display:none;">
+    <div class="container">
 
-    <label>Nombre completo</label>
-    <input id="nombre" type="text">
+      <h1>Generador de Certificados</h1>
 
-    <label>DNI</label>
-    <input id="dni" type="text">
+      <div class="card">
 
-    <label>Curso</label>
-    <input id="curso" type="text">
+        <label>Nombre completo</label>
+        <input id="nombre" type="text">
 
-    <label>Modalidad</label>
-    <select id="modalidad">
-      <option value="Presencial">Presencial</option>
-      <option value="Online">Online</option>
-    </select>
+        <label>DNI</label>
+        <input id="dni" type="text">
 
-    <label>Sede</label>
-    <input id="sede" type="text">
+        <label>Curso</label>
+        <select id="curso">
+          <option value="Reparación de celulares">Reparación de celulares</option>
+          <option value="Reparación de celulares intermedio">Reparación de celulares intermedio</option>
+          <option value="Remanufactura de pantallas">Remanufactura de pantallas</option>
+          <option value="Software básico-intermedio">Software básico-intermedio</option>
+        </select>
 
-    <label>Fecha Finalización</label>
-    <input id="fecha" type="date">
+        <label>Modalidad</label>
+        <select id="modalidad">
+          <option value="Presencial">Presencial</option>
+          <option value="Online">Online</option>
+        </select>
 
-    <button id="btnGenerar">Generar certificado + QR</button>
+        <label>Sede</label>
+        <input id="sede" type="text">
 
-    <h3 style="margin-top:25px;">Código generado:</h3>
-    <div id="generatedCode" style="font-size:22px;font-weight:bold;"></div>
+        <label>Finalización</label>
+        <input id="fecha" type="month">
 
-    <canvas id="qr" width="360" height="360" style="margin-top:20px;"></canvas>
+        <button id="btnGenerar">Generar certificado + QR</button>
 
-    <br>
-    <button id="btnDescargarQR" style="display:none;">Descargar QR</button>
+        <!-- RESULTADO -->
+        <div id="qrContainer" style="display:none; margin-top:25px; text-align:center;">
+          <h3>Código generado</h3>
+          <p id="generatedCode" style="font-size:22px; font-weight:bold;"></p>
 
-    <hr style="margin-top:40px;">
-    <button onclick="promptForToken()">Cambiar Token GitHub</button>
-    <button onclick="clearSavedToken()">Borrar Token Guardado</button>
+          <canvas id="qr" style="margin-top:15px;"></canvas>
+
+          <button id="btnDescargarQR" style="margin-top:20px;">Descargar QR</button>
+        </div>
+
+      </div>
+
+      <hr style="margin-top:40px;">
+
+      <h3>Opciones avanzadas</h3>
+      <button onclick="promptForToken()">Ingresar / Cambiar Token GitHub</button>
+      <button onclick="clearSavedToken()">Borrar Token Guardado</button>
+
+    </div>
   </div>
-
-  <!-- ===== LÓGICA ADMIN ===== -->
-  <script defer src="admin.js"></script>
 
 </body>
 </html>
