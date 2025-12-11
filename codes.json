@@ -16,5 +16,14 @@
     "modalidad": "Presencial",
     "sede": "moreno, bs as",
     "finalizacion": "2025-11"
+  },
+  {
+    "nombre": "Axel Andres Tobares",
+    "dni": "43000000",
+    "curso": "Reparación de Celulares",
+    "modalidad": "Online",
+    "sede": "asdasdasda",
+    "finalizacion": "11-2025",
+    "codigo": "ML8H3WMZ"
   }
 ]
