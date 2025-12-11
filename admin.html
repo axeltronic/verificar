@@ -1,79 +1,115 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Administrador — Axeltronic</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-  <script defer src="admin.js"></script>
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel — Axeltronic Certificados</title>
 
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial;
+            padding: 20px;
+        }
+        .card {
+            background: #111;
+            padding: 20px;
+            border-radius: 10px;
+            margin: auto;
+            max-width: 450px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: #222;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 5px;
+        }
+        label { margin-top: 10px; display: block; }
+        button {
+            margin-top: 15px;
+            padding: 12px;
+            background: #4CAF50;
+            width: 100%;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            color: white;
+        }
+        #panel { display: none; }
+        #qrPreview { margin-top: 20px; }
+    </style>
+</head>
 <body>
 
-  <!-- LOGIN -->
-  <div id="auth" class="container">
-    <h1>Acceso</h1>
-    <div class="card">
-      <label>Contraseña</label>
-      <input id="adminPass" type="password">
-      <button id="btnLogin">Ingresar</button>
-      <p id="authError" style="color:#ff5555; display:none;">Contraseña incorrecta</p>
+    <!-- LOGIN -->
+    <div id="auth" class="card">
+        <h2>Acceso al Panel</h2>
+        <input type="password" id="pass" placeholder="Contraseña">
+        <button id="btnLogin">Entrar</button>
+        <p id="authError" style="color:red; display:none;">Contraseña incorrecta</p>
     </div>
-  </div>
 
-  <!-- PANEL -->
-  <div id="panel" style="display:none;">
-    <div class="container">
+    <!-- PANEL ADMIN -->
+    <div id="panel" class="card">
+        <h2>Registrar Alumno</h2>
 
-      <h1>Generador de Certificados</h1>
+        <form id="formAlumno">
 
-      <div class="card">
+            <label>Nombre Completo</label>
+            <input id="nombre" required>
 
-        <form id="certForm">
+            <label>DNI</label>
+            <input id="dni" required>
 
-          <label>Nombre completo</label>
-          <input id="name" type="text">
+            <label>Curso</label>
+            <select id="curso">
+                <option value="Reparación de Celulares">Reparación de Celulares</option>
+                <option value="Reparación Intermedio">Reparación Intermedio</option>
+                <option value="Remanufactura de Pantallas">Remanufactura de Pantallas</option>
+                <option value="Software Básico / Intermedio">Software Básico / Intermedio</option>
+            </select>
 
-          <label>DNI</label>
-          <input id="dni" type="text">
+            <label>Modalidad</label>
+            <label><input type="radio" name="modalidad" value="Presencial" checked> Presencial</label>
+            <label><input type="radio" name="modalidad" value="Online"> Online</label>
 
-          <label>Curso</label>
-          <select id="course">
-            <option value="Reparación de celulares">Reparación de celulares</option>
-            <option value="Reparación de celulares intermedio">Reparación de celulares intermedio</option>
-            <option value="Remanufactura de pantallas">Remanufactura de pantallas</option>
-            <option value="Software básico-intermedio">Software básico-intermedio</option>
-          </select>
+            <label>Sede</label>
+            <input id="sede" placeholder="Ej: Mendoza - Capital" required>
 
-          <label>Modalidad</label>
-          <select id="modality">
-            <option value="Presencial">Presencial</option>
-            <option value="Online">Online</option>
-          </select>
+            <label>Finalización (Mes-Año)</label>
+            <input id="finalizacion" placeholder="06-2024" required>
 
-          <label>Sede</label>
-          <input id="sede" type="text">
-
-          <label>Finalización (mes/año)</label>
-          <input id="enddate" type="month">
-
-          <button type="submit">Generar certificado + QR</button>
+            <button type="submit">Generar Certificado</button>
         </form>
 
-        <div id="result" style="display:none; margin-top:20px;">
-          <h3>Código generado</h3>
-          <p id="codeDisplay"></p>
-          <img id="qrImage" style="width:260px;">
-        </div>
-
-      </div>
-
-      <h2>Listado</h2>
-      <pre id="list"></pre>
-
+        <img id="qrPreview">
     </div>
-  </div>
+
+    <script>
+        // ================== LOGIN ==================
+        const PASSWORD = "keycert";
+
+        document.getElementById("btnLogin").addEventListener("click", () => {
+            const pass = document.getElementById("pass").value;
+
+            if (pass === PASSWORD) {
+                document.getElementById("auth").style.display = "none";
+                document.getElementById("panel").style.display = "block";
+            } else {
+                document.getElementById("authError").style.display = "block";
+            }
+        });
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="admin.js"></script>
 
 </body>
 </html>
