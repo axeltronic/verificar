@@ -1,23 +1,50 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificación - Axeltronic</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generar certificado</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-    <h2>Verificación de Certificado</h2>
+<h2>Generar Certificado</h2>
 
-    <input type="text" id="codigoInput" placeholder="Ingresá el código">
+<form id="certForm">
+  <label>Nombre completo</label>
+  <input type="text" id="name" required>
 
-    <button onclick="verificarCodigo()">Verificar</button>
+  <label>DNI</label>
+  <input type="text" id="dni" required>
 
-    <div id="resultado"></div>
+  <label>Curso</label>
+  <select id="course" required>
+    <option value="">Seleccionar…</option>
+    <option>Reparación de celulares</option>
+    <option>Reparación de celulares intermedio</option>
+    <option>Remanufactura de pantallas</option>
+    <option>Software básico-intermedio</option>
+  </select>
+
+  <label>Modalidad</label>
+  <select id="modality" required>
+    <option value="">Seleccionar…</option>
+    <option>Presencial</option>
+    <option>Online</option>
+  </select>
+
+  <label>Mes y año de finalización</label>
+  <input type="month" id="enddate" required>
+
+  <button type="submit">Generar</button>
+</form>
+
+<div id="result" style="display:none;">
+  <h3>Certificado generado</h3>
+  <p>Código: <span id="codeDisplay"></span></p>
+  <img id="qrImage" style="width:200px;">
 </div>
 
-<script src="verify.js"></script>
+<script src="admin.js"></script>
 </body>
 </html>
