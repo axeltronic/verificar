@@ -1,38 +1,34 @@
-async function verificar(code) {
-    const resultDiv = document.getElementById("result");
+async function verificarCodigo() {
+    const input = document.getElementById("codigoInput").value.trim();
+    const resDiv = document.getElementById("resultado");
 
-    const res = await fetch("codes.json");
-    const alumnos = await res.json();
-
-    const alumno = alumnos.find(a => a.id === code);
-
-    if (!alumno) {
-        resultDiv.className = "invalid";
-        resultDiv.style.display = "block";
-        resultDiv.innerHTML = "❌ Código inválido o no registrado";
+    if (!input) {
+        resDiv.innerHTML = "<p class='err'>Ingresá un código válido.</p>";
         return;
     }
 
-    resultDiv.className = "valid";
-    resultDiv.style.display = "block";
-    resultDiv.innerHTML = `
-      ✔ Certificado válido<br><br>
-      <b>Nombre:</b> ${alumno.nombreCompleto}<br>
-      <b>Curso:</b> ${alumno.curso}<br>
-      <b>Modalidad:</b> ${alumno.modalidad}<br>
-      <b>Sede:</b> ${alumno.sede}<br>
-      <b>Finalización:</b> ${alumno.fechaFinalizacion}
-    `;
-}
+    try {
+        const response = await fetch("codes.json?" + new Date().getTime());
+        const data = await response.json();
 
-document.getElementById("btnVerify").addEventListener("click", () => {
-    const code = document.getElementById("codeInput").value.trim();
-    if (code) verificar(code);
-});
+        const alumno = data.find(a => a.codigo === input);
 
-const params = new URLSearchParams(window.location.search);
-if (params.has("code")) {
-    const code = params.get("code");
-    document.getElementById("codeInput").value = code;
-    verificar(code);
+        if (!alumno) {
+            resDiv.innerHTML = "<p class='err'>❌ Código inválido o no registrado</p>";
+            return;
+        }
+
+        resDiv.innerHTML = `
+            <div class="ok">
+                <h3>✔ Certificado válido</h3>
+                <p><strong>Alumno:</strong> ${alumno.nombre}</p>
+                <p><strong>DNI:</strong> ${alumno.dni}</p>
+                <p><strong>Curso:</strong> ${alumno.curso}</p>
+                <p><strong>Finalización:</strong> ${alumno.finalizacion}</p>
+                <img src="${alumno.qr}" class="qr">
+            </div>
+        `;
+    } catch (e) {
+        resDiv.innerHTML = "<p class='err'>Error cargando base de datos.</p>";
+    }
 }
