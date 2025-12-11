@@ -1,189 +1,83 @@
-// admin.js (REEMPLAZAR COMPLETO)
-// Dependencias: qrious debe estar cargado en admin.html
-
-const REPO_OWNER = "axeltronic";
-const REPO_NAME = "verificar";
-const TARGET_PATH = "codes.json";
+const REPO = "axeltronic/verificar";
+const FILE = "codes.json";
 const BRANCH = "main";
-const LOCAL_TOKEN_KEY = "gh_token_axeltronic_v1";
-const PASSWORD = "keycert";
+const TOKEN = "REEMPLAZA_TU_TOKEN";
 
-function getToken() {
-  return localStorage.getItem(LOCAL_TOKEN_KEY) || null;
-}
-function setToken(t) {
-  if (t) localStorage.setItem(LOCAL_TOKEN_KEY, t);
-}
-function clearToken() { localStorage.removeItem(LOCAL_TOKEN_KEY); alert("Token borrado del navegador."); }
-async function promptToken() {
-  const t = prompt("Pegá tu GitHub Personal Access Token (repo contents read+write). Se guardará LOCALMENTE en este navegador.");
-  if (t) { setToken(t.trim()); return t.trim(); }
-  throw new Error("Token no proporcionado");
-}
-
-async function sha256hex(message) {
-  const msgUint8 = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
-  return Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,"0")).join("");
-}
-
-function generarCodigo(len = 10) {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let out = "";
-  const arr = new Uint32Array(len);
-  crypto.getRandomValues(arr);
-  for (let i=0;i<len;i++) out += chars[arr[i] % chars.length];
-  return out;
-}
-
-async function ghGetFile(path) {
-  const token = getToken();
-  if (!token) throw new Error("Token ausente");
-  const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURIComponent(path)}?ref=${BRANCH}`;
-  const res = await fetch(url, { headers: { "Authorization": `Bearer ${token}`, "Accept":"application/vnd.github+json" } });
-  if (res.status === 404) return null;
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error("Error al leer codes.json: " + res.status + " " + txt);
-  }
-  return await res.json();
-}
-
-async function ghPutFile(path, contentB64, message, sha=null) {
-  const token = getToken();
-  if (!token) throw new Error("Token ausente");
-  const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURIComponent(path)}`;
-  const body = { message, content: contentB64, branch: BRANCH };
-  if (sha) body.sha = sha;
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: { "Authorization": `Bearer ${token}`, "Accept":"application/vnd.github+json", "Content-Type":"application/json" },
-    body: JSON.stringify(body)
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error("Error al subir codes.json: " + (data.message || JSON.stringify(data)));
-  return data;
-}
-
-function utf8_to_b64(str){ return btoa(unescape(encodeURIComponent(str))); }
-function b64_to_utf8(str){ return decodeURIComponent(escape(atob(str))); }
-
-// ------- UI: login
+// -------------------- LOGIN --------------------
 document.getElementById("btnLogin").addEventListener("click", () => {
-  const pass = (document.getElementById("pass").value || "").trim();
-  if (pass === PASSWORD) {
-    document.getElementById("auth").style.display = "none";
-    document.getElementById("panel").style.display = "block";
-  } else {
-    document.getElementById("authError").style.display = "block";
-  }
-});
-
-// ------- prompt helpers exposed to UI
-window.promptForToken = async function(){ try { await promptToken(); alert("Token guardado en este navegador."); } catch(e){ alert(e.message); } };
-window.clearSavedToken = clearToken;
-
-// ------- Main generate handler
-document.getElementById("btnGenerar").addEventListener("click", async () => {
-  try {
-    // pedir token si no existe
-    if (!getToken()) await promptToken();
-
-    // leer campos
-    const nombre = (document.getElementById("nombre").value || "").trim();
-    const dni = (document.getElementById("dni").value || "").trim();
-    const curso = (document.getElementById("curso").value || "").trim();
-    const modalidad = (document.getElementById("modalidad").value || "").trim();
-    const sede = (document.getElementById("sede").value || "").trim();
-    const finalizacion = (document.getElementById("fecha").value || "").trim(); // YYYY-MM
-
-    if (!nombre || !dni || !curso || !modalidad || !sede || !finalizacion) {
-      alert("Completá todos los campos.");
-      return;
-    }
-
-    // generar código único
-    const codigo = generarCodigo(10);
-
-    // construir objeto alumno (dni en claro porque pediste que se vea)
-    const alumno = {
-      nombre,
-      dni,
-      curso,
-      modalidad,
-      sede,
-      finalizacion,
-      codigo,
-      createdAt: new Date().toISOString()
-    };
-
-    // === obtener codes.json remoto (si existe) ===
-    const remote = await ghGetFile(TARGET_PATH);
-    let array = [];
-    let sha = null;
-    if (remote && remote.content) {
-      try {
-        const raw = b64_to_utf8(remote.content);
-        array = JSON.parse(raw);
-        if (!Array.isArray(array)) array = [];
-        sha = remote.sha;
-      } catch(e) {
-        throw new Error("El archivo remoto no contiene un JSON válido: " + e.message);
-      }
+    if (document.getElementById("adminPass").value === "keycert") {
+        document.getElementById("auth").style.display = "none";
+        document.getElementById("panel").style.display = "block";
+        cargarLista();
     } else {
-      array = [];
-      sha = null;
+        document.getElementById("authError").style.display = "block";
     }
+});
 
-    // evitar duplicados
-    if (array.some(x => x.codigo === codigo)) {
-      alert("Collision raro en código, intenta nuevamente.");
-      return;
+// -------------------- GENERAR CÓDIGO --------------------
+function generarCodigo() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "";
+    for (let i = 0; i < 10; i++) {
+        code += chars[Math.floor(Math.random() * chars.length)];
     }
+    return code;
+}
 
-    array.push(alumno);
+// -------------------- NUEVO ALUMNO --------------------
+document.getElementById("certForm").addEventListener("submit", async e => {
+    e.preventDefault();
 
-    // subir
-    const newContent = JSON.stringify(array, null, 2);
-    const newB64 = utf8_to_b64(newContent);
-    const commitMsg = `Add certificate ${codigo} — ${nombre}`;
-    const res = await ghPutFile(TARGET_PATH, newB64, commitMsg, sha);
-
-    // generar QR en canvas y overlay texto
-    const canvas = document.getElementById("qr");
-    const url = `https://axeltronic.github.io/verificar/?code=${encodeURIComponent(codigo)}`;
-
-    // generar QR
-    const q = new QRious({ element: canvas, value: url, size: 360, level: "H" });
-
-    // overlay texto en centro
-    const ctx = canvas.getContext("2d");
-    const hRect = 44;
-    ctx.fillStyle = "rgba(255,255,255,0.94)";
-    ctx.fillRect(0, canvas.height/2 - hRect/2, canvas.width, hRect);
-    ctx.fillStyle = "black";
-    ctx.textAlign = "center";
-    ctx.font = "18px Arial";
-    ctx.fillText("axeltronic.github.io/verificar", canvas.width/2, canvas.height/2 + 6);
-
-    // preparar download
-    const dataUrl = canvas.toDataURL("image/png");
-    document.getElementById("btnDescargarQR").style.display = "inline-block";
-    document.getElementById("btnDescargarQR").onclick = () => {
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = `QR_${codigo}.png`;
-      a.click();
+    const alumno = {
+        nombre: document.getElementById("name").value,
+        dni: document.getElementById("dni").value,
+        curso: document.getElementById("course").value,
+        modalidad: document.getElementById("modality").value,
+        sede: document.getElementById("sede").value,
+        finalizacion: document.getElementById("enddate").value,
+        codigo: generarCodigo()
     };
 
-    // mostrar código y éxito
-    document.getElementById("generatedCode").innerText = codigo;
-    document.getElementById("qrContainer").style.display = "block";
+    // QR
+    const verifyURL = `https://axeltronic.github.io/verificar/?code=${alumno.codigo}`;
+    const qr = new QRious({
+        value: verifyURL,
+        size: 260,
+        level: "H"
+    });
 
-    alert("Alumno agregado y codes.json actualizado (commit creado).");
+    document.getElementById("codeDisplay").innerText = alumno.codigo;
+    document.getElementById("qrImage").src = qr.toDataURL("image/png");
+    document.getElementById("result").style.display = "block";
 
-  } catch (err) {
-    console.error(err);
-    alert("Error: " + (err.message || err));
-  }
+    await guardarAlumno(alumno);
 });
+
+// -------------------- GUARDAR EN GITHUB --------------------
+async function guardarAlumno(alumno) {
+    const req = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`);
+    const info = await req.json();
+
+    const lista = JSON.parse(atob(info.content));
+    lista.push(alumno);
+
+    await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`, {
+        method: "PUT",
+        headers: { "Authorization": `Bearer ${TOKEN}` },
+        body: JSON.stringify({
+            message: "Nuevo certificado",
+            content: btoa(JSON.stringify(lista, null, 2)),
+            sha: info.sha,
+            branch: BRANCH
+        })
+    });
+
+    cargarLista();
+}
+
+// -------------------- LISTADO --------------------
+async function cargarLista() {
+    const resp = await fetch("codes.json?" + Date.now());
+    const data = await resp.json();
+    document.getElementById("list").textContent = JSON.stringify(data, null, 2);
+}
