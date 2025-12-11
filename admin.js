@@ -1,77 +1,127 @@
-async function guardarAlumno() {
+// ==================
+// AUTENTICACIÓN
+// ==================
+const PASSWORD = "keycert";
+
+document.getElementById("btnLogin").addEventListener("click", () => {
+    const pass = document.getElementById("pass").value;
+
+    if (pass === PASSWORD) {
+        document.getElementById("auth").style.display = "none";
+        document.getElementById("panel").style.display = "block";
+    } else {
+        document.getElementById("authError").style.display = "block";
+    }
+});
+
+// ==================
+// GENERAR CÓDIGO ALUMNO
+// ==================
+function generarCodigo() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "";
+    for (let i = 0; i < 10; i++) {
+        code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return code;
+}
+
+// ==================
+// VARIABLES GLOBALES
+// ==================
+let qrImage = null;
+
+// ==================
+// BOTÓN "GENERAR"
+// ==================
+document.getElementById("btnGenerar").addEventListener("click", async () => {
+
     const nombre = document.getElementById("nombre").value.trim();
     const dni = document.getElementById("dni").value.trim();
     const curso = document.getElementById("curso").value;
-    const finalizacion = document.getElementById("finalizacion").value;
-    const status = document.getElementById("status");
+    const modalidad = document.getElementById("modalidad").value;
+    const sede = document.getElementById("sede").value.trim();
+    const finalizacion = document.getElementById("fecha").value; // month YYYY-MM
 
-    if (!nombre || !dni || !curso || !finalizacion) {
-        status.innerHTML = "<p class='err'>Completá todos los datos.</p>";
+    if (!nombre || !dni || !finalizacion) {
+        alert("Completá todos los campos obligatorios.");
         return;
     }
 
-    // Código único
-    const codigo = "AX-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+    const codigo = generarCodigo();
 
-    // QR API
-    const qr = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${codigo}`;
+    // Mostrar código
+    document.getElementById("generatedCode").innerText = codigo;
 
-    const response = await fetch("codes.json?" + new Date().getTime());
-    let lista = await response.json();
+    // URL CORRECTA PARA GITHUB PAGES
+    const url = `https://axeltronic.github.io/verificar/?code=${codigo}`;
 
-    const nuevo = {
+    // Generar QR
+    const qr = new QRious({
+        element: document.getElementById("qr"),
+        value: url,
+        size: 260,
+        level: "H",
+    });
+
+    document.getElementById("qrContainer").style.display = "block";
+
+    qrImage = document.getElementById("qr").toDataURL("image/png");
+
+    // ==========================
+    // GUARDAR EN GITHUB
+    // ==========================
+    const token = "TU_TOKEN_ACÁ";
+
+    // Descargar codes.json actual
+    const response = await fetch("https://raw.githubusercontent.com/axeltronic/verificar/main/codes.json?" + Date.now());
+    const lista = await response.json();
+
+    // Nuevo alumno
+    const nuevoAlumno = {
         nombre,
         dni,
         curso,
+        modalidad,
+        sede,
         finalizacion,
-        codigo,
-        qr
+        codigo
     };
 
-    lista.push(nuevo);
+    lista.push(nuevoAlumno);
 
-    // Guardar usando GitHub API
-    await actualizarGithub(lista);
+    // Subir nueva versión
+    await fetch("https://api.github.com/repos/axeltronic/verificar/contents/codes.json", {
+        method: "PUT",
+        headers: {
+            "Authorization": `token ${token}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            message: "add new student",
+            content: btoa(unescape(encodeURIComponent(JSON.stringify(lista, null, 2)))),
+            sha: await obtenerSHA()
+        }),
+    });
 
-    status.innerHTML = `
-        <p class="ok">Alumno guardado correctamente</p>
-        <p><strong>Código:</strong> ${codigo}</p>
-        <img src="${qr}" class="qr">
-    `;
+    alert("Alumno agregado correctamente.");
+});
 
-    // borrar campos
-    document.getElementById("nombre").value = "";
-    document.getElementById("dni").value = "";
-    document.getElementById("curso").value = "";
-    document.getElementById("finalizacion").value = "";
+// ==================
+// OBTENER SHA DE codes.json
+// ==================
+async function obtenerSHA() {
+    const res = await fetch("https://api.github.com/repos/axeltronic/verificar/contents/codes.json");
+    const data = await res.json();
+    return data.sha;
 }
 
-async function actualizarGithub(lista) {
-    const token = "TU_TOKEN_AQUI"; // poner tu token
-    const user = "axeltronic";
-    const repo = "verificar";
-    const path = "codes.json";
-
-    const getFile = await fetch(
-        `https://api.github.com/repos/${user}/${repo}/contents/${path}`,
-        { headers: { Authorization: `token ${token}` } }
-    );
-
-    const fileData = await getFile.json();
-
-    await fetch(
-        `https://api.github.com/repos/${user}/${repo}/contents/${path}`,
-        {
-            method: "PUT",
-            headers: {
-                Authorization: `token ${token}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: "Actualización automática",
-                content: btoa(unescape(encodeURIComponent(JSON.stringify(lista, null, 2)))),
-                sha: fileData.sha
-            })
-        }
-    );
-}
+// ==================
+// DESCARGAR QR
+// ==================
+document.getElementById("btnDescargarQR").addEventListener("click", () => {
+    const link = document.createElement("a");
+    link.download = "qr-certificado.png";
+    link.href = qrImage;
+    link.click();
+});
