@@ -1,34 +1,63 @@
-async function verificarCodigo() {
-    const input = document.getElementById("codigoInput").value.trim();
-    const resDiv = document.getElementById("resultado");
+// Leer parámetro ?code=XXXX
+function getCodeFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("code");
+}
 
-    if (!input) {
-        resDiv.innerHTML = "<p class='err'>Ingresá un código válido.</p>";
+// Mostrar datos del alumno
+function mostrarAlumno(alumno) {
+    document.getElementById("resultado").innerHTML = `
+        <div class="card success">
+            <h2>Certificado válido</h2>
+            <p><strong>Nombre:</strong> ${alumno.nombre}</p>
+            <p><strong>DNI:</strong> ${alumno.dni}</p>
+            <p><strong>Curso:</strong> ${alumno.curso}</p>
+            <p><strong>Modalidad:</strong> ${alumno.modalidad}</p>
+            <p><strong>Sede:</strong> ${alumno.sede}</p>
+            <p><strong>Finalización:</strong> ${alumno.finalizacion}</p>
+            <p><strong>Código:</strong> ${alumno.codigo}</p>
+        </div>
+    `;
+}
+
+// Mostrar error
+function mostrarInvalido() {
+    document.getElementById("resultado").innerHTML = `
+        <div class="card error">
+            <h2>❌ Código inválido o no registrado</h2>
+        </div>
+    `;
+}
+
+// Verificación manual OR automática
+document.addEventListener("DOMContentLoaded", async () => {
+    const input = document.getElementById("codeInput");
+    const btn = document.getElementById("btnVerificar");
+
+    const codeInURL = getCodeFromURL();
+
+    if (codeInURL) {
+        input.value = codeInURL; // completa el campo automáticamente
+        verificar(codeInURL);
+    }
+
+    btn.addEventListener("click", () => {
+        verificar(input.value.trim().toUpperCase());
+    });
+});
+
+// Función de verificación
+async function verificar(code) {
+    if (!code) {
+        mostrarInvalido();
         return;
     }
 
-    try {
-        const response = await fetch("codes.json?" + new Date().getTime());
-        const data = await response.json();
+    const response = await fetch("codes.json?" + Date.now()); // evitar caché
+    const data = await response.json();
 
-        const alumno = data.find(a => a.codigo === input);
+    const alumno = data.find(a => a.codigo === code);
 
-        if (!alumno) {
-            resDiv.innerHTML = "<p class='err'>❌ Código inválido o no registrado</p>";
-            return;
-        }
-
-        resDiv.innerHTML = `
-            <div class="ok">
-                <h3>✔ Certificado válido</h3>
-                <p><strong>Alumno:</strong> ${alumno.nombre}</p>
-                <p><strong>DNI:</strong> ${alumno.dni}</p>
-                <p><strong>Curso:</strong> ${alumno.curso}</p>
-                <p><strong>Finalización:</strong> ${alumno.finalizacion}</p>
-                <img src="${alumno.qr}" class="qr">
-            </div>
-        `;
-    } catch (e) {
-        resDiv.innerHTML = "<p class='err'>Error cargando base de datos.</p>";
-    }
+    if (alumno) mostrarAlumno(alumno);
+    else mostrarInvalido();
 }
