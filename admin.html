@@ -18,12 +18,21 @@
     <input type="text" id="dni" required>
 
     <label>Curso</label>
-    <select id="curso" required>
-        <option value="">Seleccioná</option>
-        <option>Reparación de Celulares</option>
-        <option>Software & Unlock</option>
-        <option>Herramientas Técnicas</option>
-    </select>
+<select id="curso">
+  <option value="Reparación de celulares">Reparación de celulares</option>
+  <option value="Reparación de celulares intermedio">Reparación de celulares intermedio</option>
+  <option value="Remanufactura de pantallas">Remanufactura de pantallas</option>
+  <option value="Software básico-intermedio">Software básico-intermedio</option>
+</select>
+
+<label>Modalidad</label>
+<select id="modalidad">
+  <option value="Presencial">Presencial</option>
+  <option value="Online">Online</option>
+</select>
+
+    <label>Sede</label>
+    <input id="sede" type="text">
 
     <label>Finalización</label>
     <input type="month" id="finalizacion" required>
