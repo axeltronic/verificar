@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Verificación de Certificados — Axeltronic</title>
-  <link rel="stylesheet" href="style.css">
-  <script defer src="verify.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación - Axeltronic</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-  <div class="container">
-    <h1>Verificación de Certificados</h1>
 
-    <div class="card">
-      <label for="codeInput">Ingresá el código del certificado:</label>
-      <input type="text" id="codeInput" placeholder="Ej: A7X9-KD92">
-      <button id="btnVerify">Verificar</button>
-    </div>
+<div class="container">
+    <h2>Verificación de Certificado</h2>
 
-    <div id="result"></div>
-  </div>
+    <input type="text" id="codigoInput" placeholder="Ingresá el código">
+
+    <button onclick="verificarCodigo()">Verificar</button>
+
+    <div id="resultado"></div>
+</div>
+
+<script src="verify.js"></script>
 </body>
 </html>
